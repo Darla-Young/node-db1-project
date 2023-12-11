@@ -6,49 +6,43 @@ const {
   checkAccountId,
 } = require('./accounts-middleware')
 
-router.get('/', (req, res, next) => {
+router.get('/', (req, res) => {
   Accounts.getAll()
   .then(accounts => res.json(accounts))
   .catch(err => res.json(err.message))
-  next()
 })
 
-router.get('/:id', checkAccountId, (req, res, next) => {
+router.get('/:id', checkAccountId, (req, res) => {
   Accounts.getById(req.params.id)
   .then(account => res.json(account))
   .catch(err => res.json(err.message))
-  next()
 })
 
-router.post('/', checkAccountPayload, checkAccountNameUnique, (req, res, next) => {
+router.post('/',checkAccountPayload, checkAccountNameUnique, (req, res) => {
   const newAccount = {
-    name: req.body.name,
-    budget: req.body.budget.trim()
+    name: req.body.name.trim(),
+    budget: req.body.budget
   }
   Accounts.create(newAccount)
-  .then(account => res.json(account))
+  .then(account => res.status(201).json(account))
   .catch(err => res.json(err.message))
-  next()
 })
 
-router.put('/:id', checkAccountPayload, checkAccountId, (req, res, next) => {
+router.put('/:id', checkAccountPayload, checkAccountId, (req, res) => {
   const updateAccount = {
-    id: req.params.id,
-    name: req.body.name,
-    budget: req.body.budget.trim()
+    name: req.body.name.trim(),
+    budget: req.body.budget
   }
-  Accounts.updateById(updateAccount)
+  Accounts.updateById(req.params.id, updateAccount)
   .then(account => res.json(account))
   .catch(err => res.json(err.message))
-  next()
 });
 
-router.delete('/:id', checkAccountId, async (req, res, next) => {
+router.delete('/:id', checkAccountId, async (req, res) => {
   const deleteAccount = await Accounts.getById(req.params.id)
   Accounts.deleteById(req.params.id)
   .then(() => res.json(deleteAccount))
   .catch(err => res.json(err.message))
-  next()
 })
 
 router.use('*', (err, req, res, next) => { // eslint-disable-line
